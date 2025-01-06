@@ -1,0 +1,341 @@
+---
+title: "ICS Project 1"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-04-15"
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+setwd("C:/Users/rahul/OneDrive/Desktop/Notes/SS-24/ICS")
+
+```
+## Data Processing
+```{r}
+# Required Libraries 
+library(dplyr)
+library(corrplot)
+library(ggplot2)
+
+data_set_original <- read.csv2(file = "Happiness.csv", header = TRUE)
+
+# Loading data set and filter
+data_set <- read.csv2(file = "Happiness.csv", header = TRUE)
+names(data_set)[c(4,7,18)] <- c("Log.GDP", "Life.Freedom", "avg.gini")
+data_set <- data_set[,c("Country.name", "Year", "Life.Ladder", "Log.GDP",
+                        "Life.Freedom", "GINI.index..World.Bank.estimate.",
+                        "avg.gini")]
+# Data Insights 
+# head(data_set)
+# names(data_set)
+
+
+
+
+```
+
+
+
+## Task 1 =====================================================
+
+```{r}
+##=============== a) Data set with Max Year =======================
+
+## Data set with their last years data
+data_last.year <- data_set %>%
+  group_by(Country.name) %>%
+  filter( Year == max(Year) )
+
+data_last.ladder.1 <- data_last.year[, c("Country.name", "Year",
+                                         "Life.Ladder", "Log.GDP",
+                                     "Life.Freedom")]
+
+sum(is.na(data_last.ladder.1$Life.Ladder))
+abs(5.472-5.461)
+
+# 3 Countries with maximum Life.Ladder in their last year
+head(data_last.ladder.1[order(data_last.ladder.1$Life.Ladder, 
+                              decreasing = TRUE), ],n =3)
+
+# 3 Countries with minimum Life.Ladder in their last year
+tail(data_last.ladder.1[order(data_last.ladder.1$Life.Ladder, 
+                              decreasing = TRUE), ],n =3)
+
+data_finland <- data_set[which(data_set$Country.name == "Finland"), ]
+data_afghanistan <- data_set[which(data_set$Country.name == "Afghanistan"),]
+data_germany <- data_set[which(data_set$Country.name == "Germany"),]
+data_india <- data_set[which(data_set$Country.name == "India"),]
+
+## Graph of Ladder of both countries
+ggplot() +
+  geom_line(data = data_finland, 
+            aes(x = Year, y = Life.Ladder, col = "Finland")) +
+  geom_line(data = data_afghanistan, 
+            aes(x = Year, y = Life.Ladder, col = "Afghanistan")) +
+  labs(title = "Life.Ladder of Finland and Afghanistan", 
+       x = "Year", 
+       y = "Life Ladder Score", color = "Country") +
+  xlim(2005, 2018) +
+  theme_minimal() +
+  theme(legend.position = c(0.8, 0.5))
+
+## Trend of Ladder in Finland and Germany
+library(ggplot2)
+
+ggplot() +
+  geom_line(data = data_finland, aes(x = Year, y = Life.Ladder, 
+                                     col = "Finland")) +
+  geom_line(data = data_germany, aes(x = Year, y = Life.Ladder, 
+                                     col = "Germany")) +
+        
+  labs(title = "Life Ladder in Finland and Germany from 2005 to 2018", 
+       x = "Year", 
+       y = "Life Ladder") +
+  scale_color_manual(values = c(Finland = "blue", Germany = "red")) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10))  # Adjust title size here
+
+
+
+
+
+#No. of countries those do not have data for 2018
+nrow(data_last.ladder.1[which(data_last.ladder.1$Year != 2018),]) #29
+data_not.in.2018 <- data_last.ladder.1[data_last.ladder.1$Year != 2018, ]
+data_not.in.2017.18 <- data_not.in.2018[data_not.in.2018$Year != 2017, ]
+nrow(data_not.in.2017.18) #13
+
+
+summary(data_last.ladder.1$Life.Ladder)
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+range(data_not.in.2017.18$Life.Ladder)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+remove(data_not.in.2018,data_not.in.2017.18)
+##=============== b) Covariance with Other variables ===================
+
+# Correlation matrix
+data_last.correlation.1 <- na.omit(data_last.ladder.1)
+
+# Scatter plot for Life.Ladder vs Log.GDP
+g.1.1 <- ggplot(data = data_last.correlation.1, aes(x = Log.GDP, y = Life.Ladder)) +
+  geom_point(color = "black", shape = 4) +
+  labs(title = "Life Ladder vs Log GDP", 
+       x = "Log GDP", 
+       y = "Life Ladder Score") +
+  theme_minimal()
+
+# Scatter plot for Life.Ladder vs Life.Freedom
+g.1.2 <- ggplot(data = data_last.correlation.1, aes(x = Life.Freedom, y = Life.Ladder)) +
+  geom_point(color = "black", shape = 4) +
+  labs(title = "Life Ladder vs Life Freedom", 
+       x = "Life Freedom", 
+       y = "Life Ladder Score") +
+  theme_minimal()
+
+
+(corr.matrix <- cor(data_last.correlation.1[, c("Life.Ladder", "Log.GDP",
+                                     "Life.Freedom")]))
+
+corr.matrix 
+
+corrplot.mixed(corr = corr.matrix, order = 'AOE', main = "Correlation Plot",
+               mar=c(1, 1, 3, 2), tl.cex = 0.8)
+```
+
+## Task 2 =====================================================
+
+```{r}
+
+
+colSums( is.na(data_set[,c("GINI.index..World.Bank.estimate.", 
+                           "avg.gini")]) )
+
+data_avg.gini.2 <- na.omit( data_set[ , c("Country.name", "Year", "avg.gini")] ) 
+
+data_avg.gini.2 <- data_avg.gini.2 %>%
+  group_by(Country.name) %>%
+  filter( Year == max(Year) )
+
+summary(data_avg.gini.2$avg.gini)
+
+
+hist(data_avg.gini.2$avg.gini, breaks = 30)
+abline( v = c(0.2110, 0.3261, 0.3801, 0.3887, 0.4346, 0.6260), col = "red")
+
+# Box Plot of Gini INdex
+ggplot(data_avg.gini.2, aes(x = "", y = avg.gini)) +
+  geom_boxplot(fill = "lightblue", color = "blue") +
+  labs(title = "Average Gini index of Income over 2000-16" , 
+       y = "GINI Index", x ="") +
+  theme_minimal()
+
+head(data_avg.gini.2[order(data_avg.gini.2$avg.gini), ], n = 10)
+tail(data_avg.gini.2[order(data_avg.gini.2$avg.gini), ], n = 10)
+
+```
+## Task 3 =====================================================
+
+```{r}
+#removing GDF of World Bank Estimtes
+data_set <- data_set[,c("Country.name","Year", "Life.Ladder", "Log.GDP",
+                        "Life.Freedom", "avg.gini")]
+summary(data_set)
+summary(data_avg.gini.2) # 139 ie. 26 countries are missing
+summary(na.omit(data_last.ladder.1))
+
+## Sensitive questions to some countries
+## Maybe, too personal to some culture
+## Pessimistic about country
+
+```
+
+
+## Task 4 =====================================================
+
+```{r}
+
+## Data Set for food comparison
+data_set.food.4 <- data_set[which(data_set$Country.name == "Germany" | 
+                   data_set$Country.name == "Hong Kong S.A.R. of China" | 
+                   data_set$Country.name == "China"), ]
+data_set.food.4 <- data_set.food.4[ , c("Country.name", "Year",
+                                        "Log.GDP",
+                                        "Life.Freedom")]
+data_set.food.4 <- na.omit(data_set.food.4)
+
+# Freedom to make choices ----------------------
+ggplot(data_set.food.4, aes(x = Country.name, y = Life.Freedom, 
+                            fill = Country.name)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Life.Freedom by Country",
+       x = "Country Name", 
+       y = "Life Freedom") +
+  scale_fill_manual(values = c("lightblue", "lightgreen", 
+                               "lightpink", "lightyellow")) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+summary(boxplot(Life.Freedom ~ Country.name,
+        data = data_set.food.4)$stats)
+#range
+0.8954-0.7711
+
+# Hong Kong from Germany
+0.8904  - 0.8705  #0.0199
+# Log.GDP ---------------------------
+ggplot(data_set.food.4, aes(x = Country.name, y = Log.GDP, 
+                            fill = Country.name)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Log(GDP) by Country", 
+       x = "Country Name", 
+       y = "Log GDP") +
+  scale_fill_manual(values = c("lightblue", "lightgreen", 
+                               "lightpink", "lightyellow")) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+(summary(boxplot(Log.GDP ~ Country.name,
+        data = data_set.food.4)$stats))
+
+# GDP differece of Hongkong - Germany
+# 10.82 - 10.66 = 0.16
+
+```
+
+
+
+## Task 5 ===================================================== 
+
+```{r}
+
+## Measure of Central Tendency
+## Afghanistan and Germany
+
+data_afghanistan <- data_set[which(data_set$Country.name == "Afghanistan"),]
+data_germany <- data_set[which(data_set$Country.name == "Germany"),]
+data_india <- data_set[which(data_set$Country.name == "India"),]
+
+(summary(data_afghanistan$Life.Ladder))
+(summary(data_germany$Life.Ladder))
+
+
+# Life Ladder -----------------------------
+
+ggplot() +
+  geom_line(data = data_germany, aes(x = Year, 
+                                     y = Life.Ladder, 
+                                     color = "Germany")) +
+  geom_line(data = data_afghanistan, aes(x = Year,
+                                         y = Life.Ladder,
+                                         color = "Afghanistan")) +
+  labs(title = "Life Ladder Over Time", 
+       x = "Year", 
+       y = "Life Ladder", 
+       color = "") +
+  theme_minimal() +
+  scale_color_manual(values = c("Germany" = "green", 
+                                "Afghanistan" = "red")) +
+  theme(legend.position = c(0.8, 0.5))
+
+# Log GDP -----------------------------
+ggplot() +
+  geom_line(data = data_germany, aes(x = Year, 
+                                     y = Log.GDP, 
+                                     color = "Germany")) +
+  geom_line(data = data_afghanistan, aes(x = Year,
+                                         y = Log.GDP,
+                                         color = "Afghanistan")) +
+  labs(title = "Log GDP Over Time", 
+       x = "Year", 
+       y = "Log GDP", 
+       color = "") +
+  theme_minimal() +
+  scale_color_manual(values = c("Germany" = "green", 
+                                "Afghanistan" = "red")) +
+  theme(legend.position = c(0.8, 0.5))
+
+
+```
+# 3rd Aspect
+
+```{r}
+# Life.Ladder and Log.GDP in India
+ggplot() +
+  geom_line(data = data_india, aes(x = Year, 
+                                     y = Life.Ladder), col = "purple") +
+  labs(title = "Life Ladder in India from 2005 to 2018", 
+       x = "Year", 
+       y = "Life Ladder") +
+  theme_minimal()
+
+
+
+
+ggplot() +
+  geom_line(data = data_india, aes(x = Year, 
+                                     y = Log.GDP), col = "#00008B") +
+  labs(title = "Log.GDP in India from 2005 to 2018", 
+       x = "Year", 
+       y = "Log.GDP") +
+  theme_minimal()
+
+# Scatter plot for Life.Ladder vs Log.GDP
+ggplot(data = data_india, aes(x = Log.GDP, y = Life.Ladder)) +
+  geom_point(color = "black", shape = 4) +
+  labs(title = "Life Ladder vs Log GDP", 
+       x = "Log GDP", 
+       y = "Life Ladder Score") +
+  theme_minimal()
+
+
+
+```
+
+
+
+
+
