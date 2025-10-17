@@ -67,3 +67,13 @@ The analysis is based on the `Aspirin.csv` dataset, compiled from an unpublished
 Author
 
 Rahul Ramesh Vishwakarma
+
+# Summary
+
+- Analyzed data from 157 countries focusing on life satisfaction, GDP, freedom, and income inequality.
+
+- Identified Finland (7.858) as highest and Afghanistan (2.694) as lowest in life satisfaction.
+
+- Found strong correlation with GDP (r = 0.75) and moderate correlation with freedom of choice (r = 0.50).
+
+- Compared inequality (Gini 0.211–0.434) and Asian food quality across Germany, China, and Hong Kong, with Hong Kong leading.
