@@ -57,12 +57,12 @@ The analysis is based on the `Aspirin.csv` dataset, compiled from an unpublished
 
 2. Open the project in RStudio.
 
-Install required packages:
+3. Install required packages:
 
-install.packages(c("epitools", "dplyr", "ggplot2"))
+   ```bash
+   install.packages(c("epitools", "dplyr", "ggplot2"))
 
-
-3. Run the analysis script to generate results and visualizations. Ensure Aspirin.csv is in your working directory.
+4. Run the analysis script to generate results and visualizations. Ensure Aspirin.csv is in your working directory.
 
 Author
 
